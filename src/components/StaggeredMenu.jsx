@@ -16,7 +16,8 @@ export const StaggeredMenu = ({
   isFixed = false,
   accentColor = '#5227FF',
   onMenuOpen,
-  onMenuClose
+  onMenuClose,
+  onMenuItemClick
 }) => {
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
@@ -415,7 +416,19 @@ export const StaggeredMenu = ({
                       className="sm-panel-item relative text-black font-semibold text-[4rem] cursor-pointer leading-none tracking-[-2px] uppercase transition-[background,color] duration-150 ease-linear inline-block no-underline pr-[1.4em]"
                       href={it.link}
                       aria-label={it.ariaLabel}
-                      data-index={idx + 1}>
+                      data-index={idx + 1}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (onMenuItemClick && it.page) {
+                          onMenuItemClick(it.page);
+                          // Cerrar el menú después de hacer click
+                          setTimeout(() => {
+                            if (openRef.current) {
+                              toggleMenu();
+                            }
+                          }, 100);
+                        }
+                      }}>
                       <span
                         className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">
                         {it.label}
