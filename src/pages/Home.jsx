@@ -59,9 +59,12 @@ const Home = () => {
           </div>
 
           {/* Contenedor de inputs en fila */}
-          <div className="pointer-events-auto w-full max-w-3xl flex flex-col sm:flex-row gap-4 items-center">
+          <div className="pointer-events-auto w-full max-w-3xl flex flex-col sm:flex-row gap-4 items-start">
             {/* Input simple */}
-            <div className="w-full sm:w-46 md:w-60">
+            <div className="w-full sm:w-46 md:w-60 flex flex-col gap-2">
+              <label className="text-white text-md font-medium">
+                Single Word
+              </label>
               <Input
                 type="text"
                 value={singleWord}
@@ -78,7 +81,10 @@ const Home = () => {
             </div>
 
             {/* MultipleSelector */}
-            <div className="w-full flex-1">
+            <div className="w-full flex-1 flex flex-col gap-2">
+              <label className="text-white text-md font-medium">
+                Multiple Words
+              </label>
               <MultipleSelectorCreatable />
             </div>
           </div>
