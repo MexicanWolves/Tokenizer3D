@@ -1,4 +1,3 @@
-import { useState } from "react";
 import MultipleSelector from "@/components/spectrumui/multiple-selector-dependencies";
 
 const OPTIONS = [
@@ -10,17 +9,15 @@ const OPTIONS = [
   { label: "shoe", value: "shoe" },
 ];
 
-const MultipleSelectorCreatable = () => {
-  const [selectedOptions, setSelectedOptions] = useState([]);
-
+const MultipleSelectorCreatable = ({ value, onChange }) => {
   return (
     <div className="w-full multi-selector-wrapper">
       <MultipleSelector
         defaultOptions={OPTIONS}
         placeholder="Type any words you want..."
         creatable
-        value={selectedOptions}
-        onChange={setSelectedOptions}
+        value={value}
+        onChange={onChange}
         className="bg-white/10 backdrop-blur-md border-purple-400/40 focus-within:ring-purple-500 focus-within:border-purple-400"
         badgeClassName="text-white border-none badge-alternating"
         commandProps={{
@@ -91,6 +88,14 @@ const MultipleSelectorCreatable = () => {
         }
         .multi-selector-wrapper .badge-alternating:nth-child(7n+7):hover {
           background-color: rgb(225 29 72) !important;
+        }
+
+        /* X en blanco */
+        .multi-selector-wrapper .badge-alternating button {
+          color: white !important;
+        }
+        .multi-selector-wrapper .badge-alternating button:hover {
+          color: rgba(255, 255, 255, 0.8) !important;
         }
       `}</style>
     </div>

@@ -4,7 +4,7 @@ import GradientBlinds from "./components/GradientBlinds";
 import StaggeredMenu from "./components/StaggeredMenu";
 import Home from "./pages/Home";
 import About from "./pages/About";
-import Services from "./pages/Services";
+import ThreeD from "./pages/ThreeD";
 import Contact from "./pages/Contact";
 
 function App() {
@@ -12,8 +12,8 @@ function App() {
 
   const menuItems = [
     { label: "Home", ariaLabel: "Go to home page", link: "/", page: 'home' },
+    { label: "3D", ariaLabel: "View 3D visualization", link: "/3d", page: '3d' },
     { label: "About", ariaLabel: "Learn about us", link: "/about", page: 'about' },
-    { label: "Services", ariaLabel: "View our services", link: "/services", page: 'services' },
     { label: "Contact", ariaLabel: "Get in touch", link: "/contact", page: 'contact' },
   ];
 
@@ -30,15 +30,15 @@ function App() {
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
-        return <Home />;
+        return <Home onNavigate={setCurrentPage} />;
+      case '3d':
+        return <ThreeD />;
       case 'about':
         return <About />;
-      case 'services':
-        return <Services />;
       case 'contact':
         return <Contact />;
       default:
-        return <Home />;
+        return <Home onNavigate={setCurrentPage} />;
     }
   };
 

@@ -2,25 +2,40 @@ import SplitText from "../components/SplitText";
 import RotatingText from "../components/RotatingText";
 import MultipleSelectorCreatable from "../components/spectrumui/multiple-selector-creatable";
 import { Input } from "../components/ui/input";
+import { ShinyButton } from "../components/ui/shiny-button";
 import { useState } from "react";
 
 const handleAnimationComplete = () => {
   console.log("All letters have animated!");
 };
 
-const Home = () => {
+const Home = ({ onNavigate }) => {
   const [singleWord, setSingleWord] = useState("");
+  const [multipleWords, setMultipleWords] = useState([]);
 
   const handleSingleWordChange = (e) => {
-    // Elimina espacios y permite solo una palabra
     const value = e.target.value.replace(/\s/g, '');
     setSingleWord(value);
   };
 
+  const handleVisualize = () => {
+    // Verifica que haya palabra en el input Y opciones en el selector múltiple
+    if (singleWord.trim() && multipleWords.length > 0) {
+      console.log("Visualizing:", { singleWord, multipleWords });
+      // Navega a 3D
+      if (onNavigate) {
+        onNavigate('3d');
+      }
+    }
+  };
+
+  // El botón solo se habilita si hay palabra Y opciones múltiples
+  const isDisabled = !singleWord.trim() || multipleWords.length === 0;
+
   return (
     <div className="absolute inset-0 z-5 flex items-center justify-center pointer-events-none px-4">
-      <div className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 backdrop-blur-sm rounded-2xl md:rounded-3xl px-8 py-12 sm:px-12 sm:py-16 md:px-20 md:py-20 lg:px-24 lg:py-24 border border-purple-400/20 max-w-sm sm:max-w-lg md:max-w-3xl lg:max-w-5xl w-full min-h-[400px] sm:min-h-[450px] md:min-h-[500px] flex items-center justify-center">
-        <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 md:gap-6 w-full">
+      <div className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 backdrop-blur-sm rounded-2xl md:rounded-3xl px-8 py-12 sm:px-12 sm:py-16 md:px-20 md:py-20 lg:px-20 lg:py-20 border border-purple-400/20 max-w-sm sm:max-w-lg md:max-w-3xl lg:max-w-5xl w-full min-h-[400px] sm:min-h-[450px] md:min-h-[500px] flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center gap-8 w-full">
           <div
             style={{ fontFamily: "Michroma, sans-serif" }}
             className="w-full flex flex-col items-center"
@@ -72,7 +87,6 @@ const Home = () => {
                 placeholder="Enter a single word..."
                 className="bg-white/10 backdrop-blur-md border-purple-400/40 text-white placeholder:text-purple-200/60 focus-visible:ring-purple-500 focus-visible:border-purple-400 h-10"
                 onKeyDown={(e) => {
-                  // Previene el espacio
                   if (e.key === ' ') {
                     e.preventDefault();
                   }
@@ -85,8 +99,26 @@ const Home = () => {
               <label className="text-white text-md font-medium">
                 Multiple Words
               </label>
-              <MultipleSelectorCreatable />
+              <MultipleSelectorCreatable 
+                value={multipleWords}
+                onChange={setMultipleWords}
+              />
             </div>
+          </div>
+
+          {/* Botón Shiny */}
+          <div className="pointer-events-auto">
+            <ShinyButton
+              onClick={handleVisualize}
+              disabled={isDisabled}
+              className={`px-8 py-3 text-base sm:text-lg font-semibold transition-all ${
+                isDisabled 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : 'hover:scale-105'
+              }`}
+            >
+              Visualize in 3D
+            </ShinyButton>
           </div>
         </div>
       </div>
