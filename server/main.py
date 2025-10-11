@@ -194,34 +194,31 @@ async def create_word_clusters(request: MultiWordClustersRequest):
         clusters = kmeans.fit_predict(reduced)
         
         # Prepare data for visualization
-        data = []
+        nodes = []
         for i, w in enumerate(all_words):
-            data.append({
-                "word": w,
-                "x": float(reduced[i, 0]),
-                "y": float(reduced[i, 1]),
-                "z": float(reduced[i, 2]),
-                "cluster": int(clusters[i]),
-                "is_input": w in request.words,
-                "input_group": word_groups[w]  # Which input word this belongs to
+            nodes.append({
+                "id": w,
+                "group": int (clusters[i]), # El grupo es el id del cluster
             })
         
-        # Create summary of words per input group
-        groups_summary = {}
+        # Lista de links asociados
+        links  = []
         for input_word in request.words:
-            group_data = [item for item in data if item["input_group"] == input_word]
-            groups_summary[input_word] = {
-                "total_words": len(group_data),
-                "clusters": list(set([item["cluster"] for item in group_data]))
-            }
+            if word not in request.words:
+                source_word = word
+                target_word = word_groups[word]
+
+                similarity = model.similarity(source_word,target_word)
+
+                links.append({
+                    "source":source_word,
+                    "target":target_word,
+                    "value": float(similarity)
+                })
         
         return {
-            "input_words": request.words,
-            "total_unique_words": len(all_words),
-            "data": data,
-            "groups_summary": groups_summary,
-            "pca_explained_variance": pca.explained_variance_ratio_.tolist(),
-            "cluster_centers": kmeans.cluster_centers_.tolist()
+            "nodes": nodes,
+            "links": links,
         }
         
     except Exception as e:
