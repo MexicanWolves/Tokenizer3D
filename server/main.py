@@ -39,6 +39,9 @@ class MultiWordClustersRequest(BaseModel):
     words: List[str]
     top_n: Optional[int] = 200  # Number of similar words to find per word
     n_clusters: Optional[int] = 5
+class WordAnalisysRequest(BaseModel):
+    singleWord: str
+    wordList: List[str]
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -143,7 +146,7 @@ async def find_similar_words(request: WordRequest):
     return WordResponse(results=results)
 
 @app.post("/word-clusters")
-async def create_word_clusters(request: MultiWordClustersRequest):
+async def create_word_clusters(request: WordAnalisysRequest):
     """
     Create 3D clusters of similar words for multiple input words.
     
@@ -156,71 +159,39 @@ async def create_word_clusters(request: MultiWordClustersRequest):
     if model is None:
         raise HTTPException(status_code=503, detail="Word2Vec model is not loaded. Please try again later.")
     
+    singleWord = request.singleWord
+    wordList = request.wordList
+    
     try:
-        # Validate that all input words exist in vocabulary
-        missing_words = []
-        for word in request.words:
-            if word not in model.key_to_index:
-                missing_words.append(word)
+        all_words_to_check = [singleWord]+ wordList
+        missing_words = [word for word in all_words_to_check if word not in model.key_to_index]
         
         if missing_words:
+            # Si alguna palabra no existe, devuelve un error 404 claro
             raise HTTPException(
                 status_code=404, 
-                detail=f"Words not found in vocabulary: {missing_words}"
+                detail=f"The following words were not found in the vocabulary: {', '.join(missing_words)}"
             )
         
-        # Collect all words: input words + their similar words
-        all_words = []
-        word_groups = {}  # Track which group each word belongs to
-        
-        for input_word in request.words:
-            # Find similar words for this input word
-            similar_words = [w for w, _ in model.most_similar(input_word, topn=request.top_n)]
-            group_words = [input_word] + similar_words
-            
-            # Track the group for each word
-            for word in group_words:
-                if word not in all_words:
-                    all_words.append(word)
-                    word_groups[word] = input_word
-        
-        # Get vectors for all unique words and reduce to 3D
-        vectors = np.array([model[w] for w in all_words])
-        pca = PCA(n_components=3)
-        reduced = pca.fit_transform(vectors)
-        
-        # Cluster all words together
-        kmeans = KMeans(n_clusters=request.n_clusters, random_state=0)
-        clusters = kmeans.fit_predict(reduced)
-        
-        # Prepare data for visualization
+        uniqueWords = set(all_words_to_check)
         nodes = []
-        for i, w in enumerate(all_words):
-            nodes.append({
-                "id": w,
-                "group": int (clusters[i]), # El grupo es el id del cluster
+        for word in uniqueWords:
+            group = 1 if word == singleWord else 2
+            nodes.append({"id":word, "group":group})
+        links = []
+        for word_in_list in wordList:
+            similarity = model.similarity(singleWord,word_in_list)
+            links.append({
+                "source" : word_in_list,
+                "target" : singleWord,
+                "value" : float(similarity)
             })
-        
-        # Lista de links asociados
-        links  = []
-        for input_word in request.words:
-            if word not in request.words:
-                source_word = word
-                target_word = word_groups[word]
 
-                similarity = model.similarity(source_word,target_word)
-
-                links.append({
-                    "source":source_word,
-                    "target":target_word,
-                    "value": float(similarity)
-                })
-        
         return {
             "nodes": nodes,
-            "links": links,
+            "links" : links
         }
-        
+
     except Exception as e:
         logger.error(f"Error creating clusters for words '{request.words}': {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
