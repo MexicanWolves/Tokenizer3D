@@ -9,7 +9,7 @@ const handleAnimationComplete = () => {
   console.log("All letters have animated!");
 };
 
-const Home = ({ onNavigate }) => {
+const Home = ({ onNavigate, onVisualize }) => {
   const [singleWord, setSingleWord] = useState("");
   const [multipleWords, setMultipleWords] = useState([]);
 
@@ -21,6 +21,10 @@ const Home = ({ onNavigate }) => {
   const handleVisualize = () => {
     if (singleWord.trim() && multipleWords.length > 0) {
       console.log("Visualizing:", { singleWord, multipleWords });
+      // Pasa los datos a través de onVisualize
+      if (onVisualize) {
+        onVisualize({ singleWord, multipleWords });
+      }
       // Navega a 3D
       if (onNavigate) {
         onNavigate('3d');
@@ -28,7 +32,6 @@ const Home = ({ onNavigate }) => {
     }
   };
 
-  // El botón solo se habilita si hay palabra Y opciones múltiples
   const isDisabled = !singleWord.trim() || multipleWords.length === 0;
 
   return (

@@ -9,6 +9,7 @@ import Contact from "./pages/Contact";
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
+  const [graphData, setGraphData] = useState({ singleWord: "", multipleWords: [] });
 
   const menuItems = [
     { label: "Home", ariaLabel: "Go to home page", link: "/", page: 'home' },
@@ -27,62 +28,76 @@ function App() {
     setCurrentPage(page);
   };
 
+  const handleVisualize = (data) => {
+    setGraphData(data);
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
-        return <Home onNavigate={setCurrentPage} />;
+        return <Home onNavigate={setCurrentPage} onVisualize={handleVisualize} />;
       case '3d':
-        return <ThreeD />;
+        return (
+          <ThreeD 
+            singleWord={graphData.singleWord} 
+            multipleWords={graphData.multipleWords}
+            onNavigate={setCurrentPage}
+          />
+        );
       case 'about':
         return <About />;
       case 'contact':
         return <Contact />;
       default:
-        return <Home onNavigate={setCurrentPage} />;
+        return <Home onNavigate={setCurrentPage} onVisualize={handleVisualize} />;
     }
   };
 
   return (
     <div className="relative w-screen h-screen bg-black overflow-hidden">
-      {/* Fondo */}
-      <div className="absolute inset-0 z-0">
-        <GradientBlinds
-          gradientColors={["#FF9FFC", "#5227FF"]}
-          angle={0}
-          noise={0.3}
-          blindCount={12}
-          blindMinWidth={50}
-          spotlightRadius={0.5}
-          spotlightSoftness={1}
-          spotlightOpacity={1}
-          mouseDampening={0.15}
-          distortAmount={0}
-          shineDirection="left"
-          mixBlendMode="lighten"
-        />
-      </div>
+      {/* Fondo - solo mostrar en páginas que no sean 3D */}
+      {currentPage !== '3d' && (
+        <div className="absolute inset-0 z-0">
+          <GradientBlinds
+            gradientColors={["#FF9FFC", "#5227FF"]}
+            angle={0}
+            noise={0.3}
+            blindCount={12}
+            blindMinWidth={50}
+            spotlightRadius={0.5}
+            spotlightSoftness={1}
+            spotlightOpacity={1}
+            mouseDampening={0.15}
+            distortAmount={0}
+            shineDirection="left"
+            mixBlendMode="lighten"
+          />
+        </div>
+      )}
 
       {/* Renderizar página actual */}
       {renderPage()}
 
-      {/* Menú */}
-      <StaggeredMenu
-        position="right"
-        items={menuItems}
-        socialItems={socialItems}
-        displaySocials={false}
-        displayItemNumbering={true}
-        menuButtonColor="#fff"
-        openMenuButtonColor="#000"
-        changeMenuColorOnOpen={true}
-        colors={["#B19EEF", "#5227FF"]}
-        logoUrl="/tok_logo.svg"
-        accentColor="#5227FF"
-        isFixed={true}
-        onMenuItemClick={handleMenuClick}
-        onMenuOpen={() => console.log("Menu opened")}
-        onMenuClose={() => console.log("Menu closed")}
-      />
+      {/* Menú - solo mostrar en páginas que no sean 3D */}
+      {currentPage !== '3d' && (
+        <StaggeredMenu
+          position="right"
+          items={menuItems}
+          socialItems={socialItems}
+          displaySocials={false}
+          displayItemNumbering={true}
+          menuButtonColor="#fff"
+          openMenuButtonColor="#000"
+          changeMenuColorOnOpen={true}
+          colors={["#B19EEF", "#5227FF"]}
+          logoUrl="/tok_logo.svg"
+          accentColor="#5227FF"
+          isFixed={true}
+          onMenuItemClick={handleMenuClick}
+          onMenuOpen={() => console.log("Menu opened")}
+          onMenuClose={() => console.log("Menu closed")}
+        />
+      )}
     </div>
   );
 }

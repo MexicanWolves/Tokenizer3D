@@ -184,7 +184,7 @@ async def create_word_clusters(request: WordAnalisysRequest):
             links.append({
                 "source" : word_in_list,
                 "target" : singleWord,
-                "value" : float(similarity)
+                "value" : float(similarity) * 100
             })
 
         return {
