@@ -70,7 +70,7 @@ function App() {
         position="right"
         items={menuItems}
         socialItems={socialItems}
-        displaySocials={true}
+        displaySocials={false}
         displayItemNumbering={true}
         menuButtonColor="#fff"
         openMenuButtonColor="#000"

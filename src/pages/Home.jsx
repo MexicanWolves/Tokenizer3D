@@ -19,7 +19,6 @@ const Home = ({ onNavigate }) => {
   };
 
   const handleVisualize = () => {
-    // Verifica que haya palabra en el input Y opciones en el selector múltiple
     if (singleWord.trim() && multipleWords.length > 0) {
       console.log("Visualizing:", { singleWord, multipleWords });
       // Navega a 3D
