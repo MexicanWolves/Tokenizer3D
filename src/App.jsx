@@ -55,49 +55,45 @@ function App() {
 
   return (
     <div className="relative w-screen h-screen bg-black overflow-hidden">
-      {/* Fondo - solo mostrar en páginas que no sean 3D */}
-      {currentPage !== '3d' && (
-        <div className="absolute inset-0 z-0">
-          <GradientBlinds
-            gradientColors={["#FF9FFC", "#5227FF"]}
-            angle={0}
-            noise={0.3}
-            blindCount={12}
-            blindMinWidth={50}
-            spotlightRadius={0.5}
-            spotlightSoftness={1}
-            spotlightOpacity={1}
-            mouseDampening={0.15}
-            distortAmount={0}
-            shineDirection="left"
-            mixBlendMode="lighten"
-          />
-        </div>
-      )}
+      {/* Fondo - ahora también en 3D */}
+      <div className="absolute inset-0 z-0">
+        <GradientBlinds
+          gradientColors={["#FF9FFC", "#5227FF"]}
+          angle={0}
+          noise={0.3}
+          blindCount={12}
+          blindMinWidth={50}
+          spotlightRadius={0.5}
+          spotlightSoftness={1}
+          spotlightOpacity={1}
+          mouseDampening={0.15}
+          distortAmount={0}
+          shineDirection="left"
+          mixBlendMode="lighten"
+        />
+      </div>
 
       {/* Renderizar página actual */}
       {renderPage()}
 
-      {/* Menú - solo mostrar en páginas que no sean 3D */}
-      {currentPage !== '3d' && (
-        <StaggeredMenu
-          position="right"
-          items={menuItems}
-          socialItems={socialItems}
-          displaySocials={false}
-          displayItemNumbering={true}
-          menuButtonColor="#fff"
-          openMenuButtonColor="#000"
-          changeMenuColorOnOpen={true}
-          colors={["#B19EEF", "#5227FF"]}
-          logoUrl="/tok_logo.svg"
-          accentColor="#5227FF"
-          isFixed={true}
-          onMenuItemClick={handleMenuClick}
-          onMenuOpen={() => console.log("Menu opened")}
-          onMenuClose={() => console.log("Menu closed")}
-        />
-      )}
+      {/* Menú - ahora también en 3D */}
+      <StaggeredMenu
+        position="right"
+        items={menuItems}
+        socialItems={socialItems}
+        displaySocials={false}
+        displayItemNumbering={true}
+        menuButtonColor="#fff"
+        openMenuButtonColor="#000"
+        changeMenuColorOnOpen={true}
+        colors={["#B19EEF", "#5227FF"]}
+        logoUrl="/tok_logo.svg"
+        accentColor="#5227FF"
+        isFixed={true}
+        onMenuItemClick={handleMenuClick}
+        onMenuOpen={() => console.log("Menu opened")}
+        onMenuClose={() => console.log("Menu closed")}
+      />
     </div>
   );
 }
