@@ -78,25 +78,41 @@ Get 3D clustering data for multiple words and their similar words (like the Jupy
 
 ```json
 {
-  "input_words": ["car", "ocean", "computer"],
-  "total_unique_words": 145,
-  "data": [
+  "nodes": [
     {
-      "word": "car",
-      "x": 1.23,
-      "y": -0.45,
-      "z": 0.67,
-      "cluster": 0,
-      "is_input": true,
-      "input_group": "car"
+      "id": "book",
+      "group": 2
+    },
+    {
+      "id": "computer",
+      "group": 2
+    },
+    {
+      "id": "apple",
+      "group": 2
+    },
+    {
+      "id": "cats",
+      "group": 1
     }
   ],
-  "groups_summary": {
-    "car": { "total_words": 51, "clusters": [0, 1] },
-    "ocean": { "total_words": 51, "clusters": [2, 3] },
-    "computer": { "total_words": 51, "clusters": [1, 4] }
-  },
-  "pca_explained_variance": [0.15, 0.12, 0.08]
+  "links": [
+    {
+      "source": "apple",
+      "target": "cats",
+      "value": 0.12374375015497208
+    },
+    {
+      "source": "book",
+      "target": "cats",
+      "value": 0.06386274844408035
+    },
+    {
+      "source": "computer",
+      "target": "cats",
+      "value": 0.07611062377691269
+    }
+  ]
 }
 ```
 
