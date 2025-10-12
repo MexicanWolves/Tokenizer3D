@@ -41,7 +41,10 @@ const ProfileCardComponent = ({
   status = 'Online',
   contactText = 'Contact',
   showUserInfo = true,
-  onContactClick
+  onContactClick,
+  handleStyle = {},
+  statusStyle = {},
+  contactStyle = {}
 }) => {
   const wrapRef = useRef(null);
   const cardRef = useRef(null);
@@ -264,14 +267,14 @@ const ProfileCardComponent = ({
                       }} />
                   </div>
                   <div className="pc-user-text">
-                    <div className="pc-handle">@{handle}</div>
-                    <div className="pc-status">{status}</div>
+                    <div className="pc-handle" style={handleStyle}>@{handle}</div>
+                    <div className="pc-status" style={statusStyle}>{status}</div>
                   </div>
                 </div>
                 <button
                   className="pc-contact-btn"
                   onClick={handleContactClick}
-                  style={{ pointerEvents: 'auto' }}
+                  style={{ pointerEvents: 'auto', ...contactStyle }}
                   type="button"
                   aria-label={`Contact ${name || 'user'}`}>
                   {contactText}

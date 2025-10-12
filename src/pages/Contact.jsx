@@ -97,6 +97,9 @@ const Contact = () => {
                 showUserInfo={true}
                 enableTilt={true}
                 enableMobileTilt={false}
+                handleStyle={(member.name === "Teresa Rivas" || member.name === "Brayan Perez") ? { color: "black" } : {}}
+                statusStyle={(member.name === "Teresa Rivas" || member.name === "Brayan Perez") ? { color: "black" } : {}}
+                contactStyle={(member.name === "Teresa Rivas" || member.name === "Brayan Perez") ? { color: "black" } : {}}
                 onContactClick={() => {
                   window.open(member.linkedinUrl, "_blank", "noopener,noreferrer");
                 }}

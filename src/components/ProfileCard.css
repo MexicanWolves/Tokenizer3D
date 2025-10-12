@@ -77,9 +77,11 @@
   background-position:
     0 0,
     0 0,
+    0 0,
     50% 50%,
     0 0;
   background-image:
+    linear-gradient(rgba(40, 40, 40, 0.3), rgba(40, 40, 40, 0.3)),
     radial-gradient(
       farthest-side circle at var(--pointer-x) var(--pointer-y),
       hsla(266, 100%, 90%, var(--card-opacity)) 4%,
