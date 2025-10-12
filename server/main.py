@@ -8,7 +8,9 @@ import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 import logging
-import os
+from fastapi.middleware.cors import CORSMiddleware
+
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -42,6 +44,12 @@ class MultiWordClustersRequest(BaseModel):
 class WordAnalisysRequest(BaseModel):
     singleWord: str
     wordList: List[str]
+
+class GetAllWordsRequest(BaseModel):
+    limit: Optional[int] = 200  # Number of words to return
+    n_clusters: Optional[int] = 5  # Number of clusters for KMeans
+    similarity_threshold: Optional[float] = 0.3  # Threshold for links
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -145,56 +153,107 @@ async def find_similar_words(request: WordRequest):
     
     return WordResponse(results=results)
 
+from sklearn.cluster import KMeans
+import numpy as np
+
 @app.post("/word-clusters")
 async def create_word_clusters(request: WordAnalisysRequest):
     """
     Create 3D clusters of similar words for multiple input words.
-    
-    Args:
-        request: MultiWordClustersRequest containing list of words, top_n, and n_clusters
-        
-    Returns:
-        Dictionary with clustering data for visualization including all input words and their similar words
+
+    Returns a network where words are clustered based on embeddings and linked by similarity.
     """
     if model is None:
         raise HTTPException(status_code=503, detail="Word2Vec model is not loaded. Please try again later.")
-    
-    singleWord = request.singleWord
-    wordList = request.wordList
-    
-    try:
-        all_words_to_check = [singleWord]+ wordList
-        missing_words = [word for word in all_words_to_check if word not in model.key_to_index]
-        
-        if missing_words:
-            # Si alguna palabra no existe, devuelve un error 404 claro
-            raise HTTPException(
-                status_code=404, 
-                detail=f"The following words were not found in the vocabulary: {', '.join(missing_words)}"
-            )
-        
-        uniqueWords = set(all_words_to_check)
-        nodes = []
-        for word in uniqueWords:
-            group = 1 if word == singleWord else 2
-            nodes.append({"id":word, "group":group})
-        links = []
-        for word_in_list in wordList:
-            similarity = model.similarity(singleWord,word_in_list)
-            links.append({
-                "source" : word_in_list,
-                "target" : singleWord,
-                "value" : float(similarity) * 100
-            })
 
-        return {
-            "nodes": nodes,
-            "links" : links
-        }
+    words = [request.singleWord] + request.wordList
 
-    except Exception as e:
-        logger.error(f"Error creating clusters for words '{request.words}': {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+    # Check for missing words
+    missing_words = [w for w in words if w not in model.key_to_index]
+    if missing_words:
+        raise HTTPException(
+            status_code=404,
+            detail=f"The following words were not found in the vocabulary: {', '.join(missing_words)}"
+        )
+
+    # Get embeddings for all words
+    embeddings = np.array([model[w] for w in words])
+
+    # Cluster words (adjust n_clusters if desired)
+    n_clusters = request.n_clusters if hasattr(request, "n_clusters") else min(len(words), 5)
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+    labels = kmeans.fit_predict(embeddings)
+
+    # Create nodes with cluster as group
+    nodes = [{"id": w, "group": int(labels[i])} for i, w in enumerate(words)]
+
+    # Create links based on similarity threshold
+    threshold = 0.3
+    links = []
+    for i, w1 in enumerate(words):
+        for j, w2 in enumerate(words):
+            if i >= j:
+                continue
+            similarity = model.similarity(w1, w2)
+            if similarity >= threshold:
+                links.append({
+                    "source": w1,
+                    "target": w2,
+                    "value": round(similarity * 10)
+                })
+
+    return {"nodes": nodes, "links": links}
+
+@app.post("/get-all-words")
+async def get_all_words(request: GetAllWordsRequest):
+    """
+    Retrieve a subset of words from the Word2Vec model's vocabulary and return them
+    in the same nodes+links format as /word-clusters.
+    """
+    if model is None:
+        raise HTTPException(status_code=503, detail="Word2Vec model is not loaded. Please try again later.")
+
+    # Take the top `limit` words
+    limit = min(request.limit, len(model.index_to_key))
+    words = model.index_to_key[:limit]
+
+    # Get embeddings
+    embeddings = np.array([model[w] for w in words])
+
+    # Cluster words
+    n_clusters = request.n_clusters if request.n_clusters else min(len(words), 5)
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+    labels = kmeans.fit_predict(embeddings)
+
+    # Create nodes with cluster as group
+    nodes = [{"id": w, "group": int(labels[i])} for i, w in enumerate(words)]
+
+    # Create links based on similarity threshold
+    threshold = request.similarity_threshold
+    links = []
+    for i, w1 in enumerate(words):
+        for j, w2 in enumerate(words):
+            if i >= j:
+                continue
+            similarity = model.similarity(w1, w2)
+            if similarity >= threshold:
+                links.append({
+                    "source": w1,
+                    "target": w2,
+                    "value": round(similarity * 100)
+                })
+
+    return {"nodes": nodes, "links": links}
+    
+
+# Configure CORDS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 if __name__ == "__main__":
     import uvicorn
