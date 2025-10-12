@@ -22,7 +22,7 @@ const Contact = () => {
     },
     {
       name: "Brayan Perez",
-      title: "Backend Engineer",
+      title: "Backend Developer",
       handle: "brayanperez",
       avatarUrl: "/brayan_profile_pic.png",
       iconUrl: "toksito.svg",
@@ -38,7 +38,7 @@ const Contact = () => {
     },
     {
       name: "Adan Gonzalez",
-      title: "Deployment Engineer",
+      title: "Deployment",
       handle: "adangonzalez",
       avatarUrl: "/adan_profile_pic.png",
       iconUrl: "toksito.svg",
