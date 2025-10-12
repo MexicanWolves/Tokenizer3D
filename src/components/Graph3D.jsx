@@ -6,11 +6,26 @@ const Graph3D = ({ data }) => {
   const fgRef = useRef();
 
   useEffect(() => {
-    // Centrar cámara después de cargar
-    if (fgRef.current) {
-      fgRef.current.cameraPosition({ z: 300 });
-    }
+    const controls = fgRef.current.controls();
+    
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.1;
+
+    // 2. Limitar el zoom para no perder los nodos
+    controls.minDistance = 50;  // Distancia mínima de zoom
+    controls.maxDistance = 800; // Distancia máxima de zoom
+
   }, []);
+
+  // 3. Centrar la vista cuando los datos cambian o el motor se detiene
+  useEffect(() => {
+    if (data.nodes.length > 0) {
+      // Espera un momento para que el motor de físicas empiece a actuar
+      setTimeout(() => {
+        fgRef.current.zoomToFit(400, 100); // Duración de 400ms, padding de 100px
+      }, 100);
+    }
+  }, [data]);
 
   return (
     <div className="w-full h-full">
@@ -39,6 +54,8 @@ const Graph3D = ({ data }) => {
         enableNodeDrag={true}
         enableNavigationControls={true}
         showNavInfo={false}
+        // 4. Centrar la vista automáticamente cuando el grafo se estabiliza
+        onEngineStop={() => fgRef.current.zoomToFit(800, 100)}
       />
     </div>
   );

@@ -27,7 +27,7 @@ const MultipleSelectorCreatable = ({ value, onChange }) => {
           className: "text-white placeholder:text-purple-200/60",
         }}
         emptyIndicator={
-          <p className="text-center text-lg leading-10 text-purple-300">
+          <p className="text-center text-md text-purple-300">
             No results found. Start typing to create a new word!
           </p>
         }
