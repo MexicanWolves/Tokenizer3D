@@ -15,7 +15,7 @@ const randomWordPool = [
 
 const ThreeD = ({ singleWord: initialSingleWord, multipleWords: initialMultipleWords, onNavigate }) => {
   // --- ESTADOS ---
-  const [mode, setMode] = useState('CONNECT'); // 'CONNECT' o 'EXPAND'
+  const [mode, setMode] = useState('CONNECT');
   const [singleWord, setSingleWord] = useState(initialSingleWord);
   const [multipleWords, setMultipleWords] = useState(initialMultipleWords);
   
@@ -42,30 +42,31 @@ const ThreeD = ({ singleWord: initialSingleWord, multipleWords: initialMultipleW
 
     try {
       let data;
+      const API_BASE_URL = `http://172.17.192.1:8000`; // <-- REEMPLAZA ESTA IP CON LA TUYA
       if (mode === 'CONNECT') {
-        const response = await fetch("http://localhost:8000/word-clusters", {
+        const response = await fetch(`${API_BASE_URL}/word-clusters`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ singleWord, wordList }),
+          body: JSON.stringify({ singleWord: singleWord, wordList: wordList }),
         });
         if (!response.ok) throw new Error((await response.json()).detail || 'Failed to fetch');
         data = await response.json();
       } else { // EXPAND mode
-        // --- CORRECCIÓN AQUÍ ---
-        // Llamar a la API para cada palabra y esperar todos los resultados
-        const promises = wordList.map(word => 
-          fetch("http://localhost:8000/similar-words", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ word: word, topn: 5 }),
-          }).then(res => {
-            if (!res.ok) throw new Error(`Failed to get similar words for "${word}"`);
-            return res.json();
-          })
-        );
+        const response = await fetch(`${API_BASE_URL}/similar-words`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ words: wordList, top_n: 5 }),
+        });
+
+        if (!response.ok) {
+          const errorDetail = (await response.json()).detail || 'Failed to get similar words';
+          throw new Error(errorDetail);
+        }
         
-        const similarWordsData = await Promise.all(promises);
-        data = transformExpandDataToGraph(similarWordsData);
+        const apiResponse = await response.json();
+        // --- CORRECCIÓN CLAVE AQUÍ ---
+        // Accedemos a la propiedad 'results' del objeto de respuesta
+        data = transformExpandDataToGraph(apiResponse.results);
       }
       setGraphData(data);
     } catch (err) {
@@ -77,14 +78,19 @@ const ThreeD = ({ singleWord: initialSingleWord, multipleWords: initialMultipleW
   };
 
   // --- TRANSFORMACIÓN DE DATOS PARA MODO EXPAND ---
-  const transformExpandDataToGraph = (apiResponse) => {
+  const transformExpandDataToGraph = (resultsArray) => {
     const nodes = [];
     const links = [];
     const existingNodes = new Set();
 
-    apiResponse.forEach(item => {
-      const sourceWord = item.word;
-      // Añadir nodo principal si no existe
+    // --- CORRECCIÓN CLAVE AQUÍ ---
+    // El array que recibimos ahora se llama 'resultsArray'
+    resultsArray.forEach(item => {
+      // La palabra original ahora está en 'item.input_word'
+      const sourceWord = item.input_word;
+      
+      if (!item.success) return; // Omitir palabras que no se encontraron
+
       if (!existingNodes.has(sourceWord)) {
         nodes.push({ id: sourceWord, group: 1, color: "#8b5cf6" });
         existingNodes.add(sourceWord);
@@ -92,12 +98,10 @@ const ThreeD = ({ singleWord: initialSingleWord, multipleWords: initialMultipleW
 
       item.similar_words.forEach(sim => {
         const targetWord = sim.word;
-        // Añadir nodo similar si no existe
         if (!existingNodes.has(targetWord)) {
           nodes.push({ id: targetWord, group: 2, color: "#3b82f6" });
           existingNodes.add(targetWord);
         }
-        // Añadir enlace
         links.push({ source: sourceWord, target: targetWord, value: sim.similarity });
       });
     });
@@ -111,65 +115,39 @@ const ThreeD = ({ singleWord: initialSingleWord, multipleWords: initialMultipleW
   }, []); // El array vacío asegura que solo se ejecute al montar
 
   const handleSingleWordChange = (e) => {
-    const value = e.target.value.replace(/\s/g, '');
-    setSingleWord(value);
+    setSingleWord(e.target.value.replace(/\s/g, ''));
   };
 
   // Función para añadir palabras aleatorias
   const addRandomWords = () => {
     const currentWordValues = new Set(multipleWords.map(w => w.value));
     const availableWords = randomWordPool.filter(word => !currentWordValues.has(word));
-    
-    const shuffled = availableWords.sort(() => 0.5 - Math.random());
-    const wordsToAdd = shuffled.slice(0, 10);
-
-    const newWordObjects = wordsToAdd.map(word => ({ label: word, value: word }));
-    setMultipleWords(prevWords => [...prevWords, ...newWordObjects]);
+    const wordsToAdd = availableWords.sort(() => 0.5 - Math.random()).slice(0, 10);
+    setMultipleWords(prev => [...prev, ...wordsToAdd.map(w => ({ label: w, value: w }))]);
   };
 
   return (
-    <div className="absolute inset-0 z-5 flex items-center justify-center pointer-events-none px-4 py-4">
+    <div className="absolute inset-0 z-5 flex items-center justify-center pointer-events-none px-4 py-8 sm:py-4 pt-20">
       <div className="bg-gradient-to-r from-purple-600/30 to-blue-600/30 backdrop-blur-sm rounded-2xl md:rounded-3xl p-4 md:p-6 border border-purple-400/20 w-full max-w-7xl h-full max-h-[95vh] lg:h-[85vh] lg:max-h-[900px]">
         <div className="flex flex-col lg:flex-row gap-4 md:gap-6 w-full h-full">
           {/* Columna Izquierda: Grafo */}
           <div className="h-1/2 lg:h-full w-full lg:w-2/3 bg-black/30 rounded-xl overflow-hidden pointer-events-auto relative">
-            {loading && (
-              <div className="absolute inset-0 flex items-center justify-center text-white text-xl animate-pulse z-10">
-                Loading...
-              </div>
-            )}
-            {error && !loading && (
-               <div className="absolute inset-0 flex items-center justify-center text-red-400 text-center p-4 z-10">
-                <div>
-                  <p className="font-bold">Error</p>
-                  <p>{error}</p>
-                </div>
-              </div>
-            )}
+            {loading && <div className="absolute inset-0 flex items-center justify-center text-white text-xl animate-pulse z-10">Loading...</div>}
+            {error && !loading && <div className="absolute inset-0 flex items-center justify-center text-red-400 text-center p-4 z-10"><div><p className="font-bold">Error</p><p>{error}</p></div></div>}
             <Graph3D data={graphData} />
-
-            {/* Bloque de Instrucciones */}
-            <div className="absolute bottom-2 left-2 z-20 p-3 bg-black/50 backdrop-blur-sm rounded-lg text-white text-xs pointer-events-none max-w-[200px]">
-              <h4 className="font-bold mb-1 text-sm">Controls</h4>
-              <ul className="space-y-1">
-                <li><span className="font-semibold text-purple-300">Rotate:</span> Left-click + Drag</li>
-                <li><span className="font-semibold text-purple-300">Pan:</span> Right-click + Drag</li>
-                <li><span className="font-semibold text-purple-300">Zoom:</span> Scroll Wheel</li>
-                <li><span className="font-semibold text-purple-300">Select:</span> Click on a node</li>
-              </ul>
-            </div>
+            <div className="absolute bottom-2 left-2 z-20 p-3 bg-black/50 backdrop-blur-sm rounded-lg text-white text-xs pointer-events-none max-w-[200px]"><h4 className="font-bold mb-1 text-sm">Controls</h4><ul className="space-y-1"><li><span className="font-semibold text-purple-300">Rotate:</span> Left-click + Drag</li><li><span className="font-semibold text-purple-300">Pan:</span> Right-click + Drag</li><li><span className="font-semibold text-purple-300">Zoom:</span> Scroll Wheel</li><li><span className="font-semibold text-purple-300">Select:</span> Click on a node</li></ul></div>
           </div>
 
           {/* Columna Derecha: Controles */}
-          <div className="h-1/2 lg:h-full w-full lg:w-1/3 flex flex-col gap-4 pointer-events-auto overflow-y-auto p-2 rounded-lg">
+          <div className="h-1/2 lg:h-full w-full lg:w-1/3 flex flex-col gap-4 pointer-events-auto overflow-y-auto p-2 rounded-lg custom-scrollbar">
             <h2 className="text-xl md:text-2xl font-bold text-white shrink-0" style={{ fontFamily: "Michroma, sans-serif" }}>Playground</h2>
             
             {/* --- INTERRUPTOR DE MODO --- */}
             <div className="flex flex-col gap-2">
               <label className="text-white text-md font-medium">Mode</label>
               <div className="flex bg-black/30 p-1 rounded-lg border border-purple-400/30">
-                <button onClick={() => setMode('CONNECT')} className={`w-1/2 py-2 rounded-md text-sm font-semibold transition-colors ${mode === 'CONNECT' ? 'bg-purple-600 text-white' : 'text-purple-300 hover:bg-white/10'}`}>CONNECT</button>
-                <button onClick={() => setMode('EXPAND')} className={`w-1/2 py-2 rounded-md text-sm font-semibold transition-colors ${mode === 'EXPAND' ? 'bg-purple-600 text-white' : 'text-purple-300 hover:bg-white/10'}`}>EXPAND</button>
+                <button onClick={() => setMode('CONNECT')} className={`cursor-pointer w-1/2 py-2 rounded-md text-sm font-semibold transition-colors ${mode === 'CONNECT' ? 'bg-purple-600 text-white' : 'text-purple-300 hover:bg-white/10'}`}>CONNECT</button>
+                <button onClick={() => setMode('EXPAND')} className={`cursor-pointer w-1/2 py-2 rounded-md text-sm font-semibold transition-colors ${mode === 'EXPAND' ? 'bg-purple-600 text-white' : 'text-purple-300 hover:bg-white/10'}`}>EXPAND</button>
               </div>
             </div>
 

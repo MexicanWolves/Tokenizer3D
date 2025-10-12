@@ -47,8 +47,8 @@ const Contact = () => {
   ];
 
   return (
-    <div className="absolute inset-0 z-5 flex items-center justify-center pointer-events-none px-4 py-8 overflow-y-auto">
-      <div className="flex flex-col items-center justify-center gap-6 sm:gap-4 w-full max-w-7xl my-auto">
+    <div className="absolute inset-0 z-5 flex items-start justify-center px-4 py-8 overflow-y-auto custom-scrollbar">
+      <div className="flex flex-col items-center justify-start gap-6 sm:gap-4 w-full max-w-7xl my-auto">
         {/* Título con SplitText */}
         <div className="text-center" style={{ fontFamily: "Michroma, sans-serif" }}>
           <SplitText
@@ -75,7 +75,7 @@ const Contact = () => {
         />
 
         {/* Grid de tarjetas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 sm:gap-5 md:gap-10 lg:gap-20 w-full pointer-events-auto px-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 sm:gap-5 md:gap-10 lg:gap-20 w-full px-2 pb-10">
           {teamMembers.map((member, index) => (
             <div
               key={index}

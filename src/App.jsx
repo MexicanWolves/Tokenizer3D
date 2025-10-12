@@ -56,7 +56,7 @@ function App() {
   return (
     <div className="relative w-screen h-screen bg-black overflow-hidden">
       {/* Fondo - ahora también en 3D */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 pointer-events-none">
         <GradientBlinds
           gradientColors={["#FF9FFC", "#5227FF"]}
           angle={0}
@@ -65,7 +65,7 @@ function App() {
           blindMinWidth={50}
           spotlightRadius={0.5}
           spotlightSoftness={1}
-          spotlightOpacity={1}
+          spotlightOpacity={1}  
           mouseDampening={0.15}
           distortAmount={0}
           shineDirection="left"
