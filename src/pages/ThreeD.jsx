@@ -43,7 +43,6 @@ const ThreeD = ({ singleWord: initialSingleWord, multipleWords: initialMultipleW
     try {
       let data;
       const API_BASE_URL = import.meta.env.VITE_API_URL_BASE;
-      console.log(API_BASE_URL);
       if (mode === 'CONNECT') {
         const response = await fetch(`${API_BASE_URL}/word-clusters`, {
           method: "POST",
