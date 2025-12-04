@@ -7,6 +7,7 @@ import About from "./pages/About";
 import ThreeD from "./pages/ThreeD";
 import Contact from "./pages/Contact";
 import FullGraph from "./pages/FullGraph";
+import TokenVisualization from "./pages/TokenVisualization";
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -15,6 +16,7 @@ function App() {
   const menuItems = [
     { label: "Home", ariaLabel: "Go to home page", link: "/", page: 'home' },
     { label: "3D", ariaLabel: "View 3D visualization", link: "/3d", page: '3d' },
+    { label: "Tokens", ariaLabel: "View token embeddings", link: "/tokens", page: 'tokens' },
     { label: "Graph", ariaLabel: "View full graph", link: "/fullgraph", page: 'fullgraph' },
     { label: "About", ariaLabel: "Learn about us", link: "/about", page: 'about' },
     { label: "Contact", ariaLabel: "Get in touch", link: "/contact", page: 'contact' },
@@ -50,6 +52,8 @@ function App() {
         return <About />;
       case 'contact':
         return <Contact />;
+      case 'tokens':
+        return <TokenVisualization />;
       case 'fullgraph':
         return <FullGraph />;
       default:
