@@ -2,7 +2,8 @@ import { useState } from "react";
 import Graph3D from "../components/Graph3D";
 import { Input } from "../components/ui/input";
 import { ShinyButton } from "../components/ui/shiny-button";
-import { getTextEmbeddings, transformTokensToGraphData } from "../services/embeddingApi";
+import { getTextEmbeddings, transformTokensToGraphData } from "../services/bertApi";
+import { getWord2VecEmbeddings, transformWord2VecTokensToGraphData } from "@/services/word2vecApi";
 
 const TokenVisualization = () => {
   const [inputText, setInputText] = useState("");
@@ -10,6 +11,7 @@ const TokenVisualization = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [tokensData, setTokensData] = useState(null);
+  const [selectedModel, setSelectedModel] = useState("bert"); // "bert" o "word2vec"
 
   const handleVisualize = async () => {
     if (!inputText.trim()) {
@@ -21,10 +23,18 @@ const TokenVisualization = () => {
     setError(null);
 
     try {
-      const data = await getTextEmbeddings(inputText);
+      let data;
+      let graphDataFormatted;
+
+      if (selectedModel === "bert") {
+        data = await getTextEmbeddings(inputText);
+        graphDataFormatted = transformTokensToGraphData(data.tokens);
+      } else {
+        data = await getWord2VecEmbeddings(inputText);
+        graphDataFormatted = transformWord2VecTokensToGraphData(data.tokens);
+      }
+
       setTokensData(data);
-      
-      const graphDataFormatted = transformTokensToGraphData(data.tokens);
       setGraphData(graphDataFormatted);
     } catch (err) {
       console.error("Error fetching embeddings:", err);
@@ -80,6 +90,11 @@ const TokenVisualization = () => {
                 <li><span className="font-semibold text-purple-300">Select:</span> Click on a node</li>
               </ul>
             </div>
+
+            {/* Indicador de modelo activo */}
+            <div className="absolute top-2 left-2 z-20 px-3 py-1 bg-black/50 backdrop-blur-sm rounded-lg text-white text-sm font-semibold pointer-events-none">
+              Model: {selectedModel === "bert" ? "BERT" : "Word2Vec"}
+            </div>
           </div>
 
           {/* Columna Derecha: Controles e Información */}
@@ -87,6 +102,38 @@ const TokenVisualization = () => {
             <h2 className="text-xl md:text-2xl font-bold text-white shrink-0" style={{ fontFamily: "Michroma, sans-serif" }}>
               Token Embeddings
             </h2>
+
+            {/* Selector de modelo */}
+            <div className="flex flex-col gap-2">
+              <label className="text-white text-md font-medium">Select Model</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSelectedModel("bert")}
+                  className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all ${
+                    selectedModel === "bert"
+                      ? "bg-purple-500 text-white shadow-lg shadow-purple-500/50"
+                      : "bg-white/10 text-purple-200 hover:bg-white/20"
+                  }`}
+                >
+                  BERT
+                </button>
+                <button
+                  onClick={() => setSelectedModel("word2vec")}
+                  className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all ${
+                    selectedModel === "word2vec"
+                      ? "bg-blue-500 text-white shadow-lg shadow-blue-500/50"
+                      : "bg-white/10 text-purple-200 hover:bg-white/20"
+                  }`}
+                >
+                  Word2Vec
+                </button>
+              </div>
+              <p className="text-xs text-purple-200/70">
+                {selectedModel === "bert" 
+                  ? "BERT uses subword tokenization with contextual embeddings"
+                  : "Word2Vec uses word-level tokenization with static embeddings"}
+              </p>
+            </div>
 
             {/* Input de texto */}
             <div className="flex flex-col gap-2">
@@ -120,6 +167,9 @@ const TokenVisualization = () => {
                 <div className="text-purple-200 text-sm">
                   <p><span className="font-semibold">Original Text:</span> {tokensData.text}</p>
                   <p className="mt-2"><span className="font-semibold">Total Tokens:</span> {tokensData.tokens.length}</p>
+                  <p className="mt-1 text-xs">
+                    <span className="font-semibold">Model:</span> {selectedModel === "bert" ? "BERT (Contextual)" : "Word2Vec (Static)"}
+                  </p>
                 </div>
                 
                 <div className="flex flex-col gap-2 max-h-64 overflow-y-auto custom-scrollbar">
@@ -130,9 +180,9 @@ const TokenVisualization = () => {
                     >
                       <div className="flex justify-between items-start">
                         <span className={`font-mono text-sm ${
-                          token.token === '[CLS]' || token.token === '[SEP]' 
-                            ? 'text-red-300' 
-                            : 'text-purple-300'
+                          selectedModel === "bert" 
+                            ? (token.token === '[CLS]' || token.token === '[SEP]' ? 'text-red-300' : 'text-purple-300')
+                            : 'text-blue-400'
                         }`}>
                           {token.token}
                         </span>
@@ -151,14 +201,27 @@ const TokenVisualization = () => {
             <div className="bg-black/30 p-4 rounded-lg border border-purple-400/20 mt-auto">
               <h3 className="text-white font-semibold text-sm mb-2">Legend</h3>
               <div className="flex flex-col gap-2 text-xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <span className="text-purple-200">Special Tokens ([CLS], [SEP])</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-                  <span className="text-purple-200">Word Tokens</span>
-                </div>
+                {selectedModel === "bert" ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                      <span className="text-purple-200">Special Tokens ([CLS], [SEP])</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                      <span className="text-purple-200">Word Tokens</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                      <span className="text-purple-200">Special Tokens ([CLS], [SEP])</span>
+                    </div>
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <span className="text-purple-200">Word Tokens (Static Embeddings)</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

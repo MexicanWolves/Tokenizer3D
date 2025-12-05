@@ -13,10 +13,15 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': {
+      '/bert': {
         target: 'http://34.123.216.38:8000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        rewrite: (path) => path.replace(/^\/bert/, '')
+      },
+      '/word2vec': {
+        target: 'http://34.42.66.227:8000/',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/word2vec/, '')
       }
     }
   }
