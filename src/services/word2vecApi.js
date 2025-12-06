@@ -8,7 +8,7 @@
  */
 export const getWord2VecEmbeddings = async (text) => {
   try {
-    const response = await fetch("/bert/embed", {
+    const response = await fetch("http://34.123.216.38:8000/embed", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
