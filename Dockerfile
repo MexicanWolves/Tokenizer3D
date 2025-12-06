@@ -2,10 +2,6 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-ARG VITE_API_URL_BASE
-
-ENV VITE_API_URL_BASE=${VITE_API_URL_BASE}
-
 COPY package*.json ./
 RUN npm install
 
