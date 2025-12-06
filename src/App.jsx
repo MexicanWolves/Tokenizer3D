@@ -15,9 +15,9 @@ function App() {
 
   const menuItems = [
     { label: "Home", ariaLabel: "Go to home page", link: "/", page: 'home' },
-    { label: "3D", ariaLabel: "View 3D visualization", link: "/3d", page: '3d' },
+    //{ label: "3D", ariaLabel: "View 3D visualization", link: "/3d", page: '3d' },
     { label: "Tokens", ariaLabel: "View token embeddings", link: "/tokens", page: 'tokens' },
-    { label: "Graph", ariaLabel: "View full graph", link: "/fullgraph", page: 'fullgraph' },
+    //{ label: "Graph", ariaLabel: "View full graph", link: "/fullgraph", page: 'fullgraph' },
     { label: "About", ariaLabel: "Learn about us", link: "/about", page: 'about' },
     { label: "Contact", ariaLabel: "Get in touch", link: "/contact", page: 'contact' },
   ];

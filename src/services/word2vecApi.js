@@ -8,7 +8,7 @@
  */
 export const getWord2VecEmbeddings = async (text) => {
   try {
-    const response = await fetch("/word2vec/embed-text", {
+    const response = await fetch("/bert/embed", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -36,12 +36,16 @@ export const getWord2VecEmbeddings = async (text) => {
  * @returns {{nodes: Array, links: Array}}
  */
 export const transformWord2VecTokensToGraphData = (tokens) => {
+  const SCALE_FACTOR = 40; // Multiplicador para aumentar la distancia entre nodos
+  
   const nodes = tokens.map((tokenData, index) => ({
     id: `${tokenData.token}_${index}`,
     label: tokenData.token,
-    x: tokenData.vector_3d[0],
-    y: tokenData.vector_3d[1],
-    z: tokenData.vector_3d[2],
+    // Usar fx, fy, fz para fijar las posiciones y evitar la simulación de física
+    // Multiplicar por SCALE_FACTOR para aumentar la distancia
+    fx: tokenData.vector_3d[0] * SCALE_FACTOR,
+    fy: tokenData.vector_3d[1] * SCALE_FACTOR,
+    fz: tokenData.vector_3d[2] * SCALE_FACTOR,
     group: tokenData.token === '[CLS]' || tokenData.token === '[SEP]' ? 1 : 2,
     color: tokenData.token === '[CLS]' || tokenData.token === '[SEP]' ? '#ff6b6b' : '#3b82f6',
   }));
