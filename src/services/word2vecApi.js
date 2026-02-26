@@ -8,7 +8,7 @@
  */
 export const getWord2VecEmbeddings = async (text) => {
   try {
-    const response = await fetch("http://apia.keiwv.dev/embed", {
+    const response = await fetch("https://apia.keiwv.dev/embed", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
