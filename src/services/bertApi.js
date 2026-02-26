@@ -8,7 +8,7 @@
  */
 export const getTextEmbeddings = async (text) => {
   try {
-    const response = await fetch("https://apic.keiwv.dev/embed-text", {
+    const response = await fetch("https://apia.keiwv.dev/embed-text", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
