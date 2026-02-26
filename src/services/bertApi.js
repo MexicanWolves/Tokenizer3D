@@ -8,7 +8,7 @@
  */
 export const getTextEmbeddings = async (text) => {
   try {
-    const response = await fetch("http://34.42.66.227:8000/embed-text", {
+    const response = await fetch("http://apic.keiwv.dev/embed-text", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
