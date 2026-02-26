@@ -11,17 +11,18 @@ const Graph3D = ({ data }) => {
     controls.enableDamping = true;
     controls.dampingFactor = 0.1;
 
-    // Limitar el zoom para no perder los nodos
-    controls.minDistance = 50;
-    controls.maxDistance = 800;
+    // 2. Limitar el zoom para no perder los nodos
+    controls.minDistance = 50;  // Distancia mínima de zoom
+    controls.maxDistance = 800; // Distancia máxima de zoom
 
   }, []);
 
-  // Centrar la vista cuando los datos cambian
+  // 3. Centrar la vista cuando los datos cambian o el motor se detiene
   useEffect(() => {
     if (data.nodes.length > 0) {
+      // Espera un momento para que el motor de físicas empiece a actuar
       setTimeout(() => {
-        fgRef.current.zoomToFit(400, 100);
+        fgRef.current.zoomToFit(400, 100); // Duración de 400ms, padding de 100px
       }, 100);
     }
   }, [data]);
@@ -50,21 +51,11 @@ const Graph3D = ({ data }) => {
         linkDirectionalParticleWidth={2}
         linkDirectionalParticleSpeed={() => 0.005}
         linkDirectionalParticleColor={() => "#8b5cf6"}
-        enableNodeDrag={false}
+        enableNodeDrag={true}
         enableNavigationControls={true}
         showNavInfo={false}
-        // CLAVE: Desactivar el motor de física para usar posiciones fijas
-        numDimensions={3}
-        dagMode={null}
-        // No usar d3Force ya que queremos posiciones fijas
-        d3AlphaDecay={0}
-        d3VelocityDecay={1}
-        warmupTicks={0}
-        cooldownTicks={0}
-        // Esto asegura que el motor de física se detenga inmediatamente
-        onEngineStop={() => {
-          // Ya no necesitamos zoomToFit aquí porque usamos posiciones fijas
-        }}
+        // 4. Centrar la vista automáticamente cuando el grafo se estabiliza
+        onEngineStop={() => fgRef.current.zoomToFit(800, 100)}
       />
     </div>
   );
